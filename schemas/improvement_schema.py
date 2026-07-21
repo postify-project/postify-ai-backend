@@ -10,6 +10,6 @@ class VideoStatsRequest(BaseModel):
     comments: int
 
 class ImprovementResponse(BaseModel):
-    performance_analysis: str       # AI ki taraf se summary
-    identified_issues: List[str]    # Kya problems hain
-    actionable_suggestions: List[str] # Kya karna chahiye
+    performance_analysis: str       
+    identified_issues: List[str]    
+    actionable_suggestions: List[str] 

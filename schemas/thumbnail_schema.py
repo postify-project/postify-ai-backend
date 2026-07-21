@@ -8,8 +8,8 @@ class ThumbResponse(BaseModel):
     caption: str
     hashtags: List[str]
     thumbnail_url: str
-    thumbnail_text: str   # Yeh add kiya
-    image_prompt: str     # Yeh add kiya
+    thumbnail_text: str   
+    image_prompt: str     
 
 class ThumbJobResponse(BaseModel):
     job_id: str

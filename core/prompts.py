@@ -15,7 +15,7 @@ AUTO_REPLY_PROMPT = PromptTemplate(
 )
 from langchain_core.prompts import PromptTemplate
 
-# --- Pehle wala Auto Reply Prompt yahan rehne dein ---
+# --- Auto Reply Prompt ---
 AUTO_REPLY_PROMPT = PromptTemplate(
     input_variables=["platform", "comment", "context"],
     template="""
@@ -29,7 +29,7 @@ AUTO_REPLY_PROMPT = PromptTemplate(
     """
 )
 
-# --- Naya Metadata Prompt ---
+# --- Metadata Prompt ---
 METADATA_PROMPT = PromptTemplate(
     input_variables=["transcript", "platform", "format_instructions"],
     template="""
@@ -45,7 +45,7 @@ METADATA_PROMPT = PromptTemplate(
 )
 
 
-# --- Post Generation Prompt (Update kiya gaya) ---
+# --- Post Generation Prompt ---
 POST_PROMPT = PromptTemplate(
     input_variables=["topic", "platform", "tone", "format_instructions"],
     template="""
@@ -61,7 +61,7 @@ POST_PROMPT = PromptTemplate(
     """
 )
 
-# --- Naya Improvement Engine Prompt ---
+# --- Improvement Engine Prompt ---
 IMPROVEMENT_PROMPT = PromptTemplate(
     input_variables=["video_title", "views", "watch_time", "ctr", "likes", "comments", "format_instructions"],
     template="""

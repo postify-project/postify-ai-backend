@@ -3,7 +3,7 @@ from typing import Optional
 
 class TranslateRequest(BaseModel):
     video_url: str
-    target_language: str # e.g., "Spanish", "Urdu", "French"
+    target_language: str 
 
 class TranslateJobResponse(BaseModel):
     job_id: str

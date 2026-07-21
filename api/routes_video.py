@@ -14,7 +14,7 @@ from moviepy import ImageClip, AudioFileClip, concatenate_videoclips, TextClip, 
 router = APIRouter()
 video_jobs = {}
 
-# Yahan 'async def' ki jagah 'def' hai
+
 def process_video_job(job_id: str, prompt: str, captions: bool):
     try:
         video_jobs[job_id]["status"] = "Generating Script..."
@@ -51,13 +51,13 @@ def process_video_job(job_id: str, prompt: str, captions: bool):
                 f.write(img_data)
             temp_files.append(img_path)
             
-            # Audio generate karna (Edge-TTS) - Yahan asyncio.run use hua hai
+            # Audio generate  (Edge-TTS) 
             audio_path = f"temp_audio_{job_id}_{i}.mp3"
             communicate = edge_tts.Communicate(voice, voice="en-US-AriaNeural")
             asyncio.run(communicate.save(audio_path))
             temp_files.append(audio_path)
             
-            # Clips banana
+            # Create Clips 
             audio_clip = AudioFileClip(audio_path)
             img_clip = ImageClip(img_path).with_duration(audio_clip.duration).with_audio(audio_clip)
             

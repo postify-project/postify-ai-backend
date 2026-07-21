@@ -23,7 +23,7 @@ TTS_VOICES = {
     "english": "en-US-AriaNeural"
 }
 
-# Yahan bhi 'def' hai
+
 def process_translation_job(job_id: str, video_url: str, target_language: str):
     try:
         video_filename = f"temp_trans_vid_{job_id}.mp4"
@@ -57,7 +57,7 @@ def process_translation_job(job_id: str, video_url: str, target_language: str):
         translate_jobs[job_id]["status"] = "Generating New Voiceover..."
         voice = TTS_VOICES.get(target_language.lower(), "en-US-AriaNeural")
         
-        # Yahan asyncio.run use hua hai
+    
         async def generate_tts():
             communicate = edge_tts.Communicate(translated_text, voice=voice)
             await communicate.save(new_audio_filename)

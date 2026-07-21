@@ -2,7 +2,6 @@ import os
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-# routes_translate add kiya
 from api import routes_reply, routes_metadata, routes_post, routes_improvement, routes_video, routes_thumbnail, routes_translate 
 
 app = FastAPI(title="QRYZON AI Backend", version="1.0.0")

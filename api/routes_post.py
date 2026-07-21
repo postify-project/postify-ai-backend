@@ -4,8 +4,8 @@ from core.llm_setup import get_llm
 from core.prompts import POST_PROMPT
 from langchain_core.output_parsers import JsonOutputParser
 import urllib.parse
-import requests # Pic download karne ke liye
-import uuid # Unique naam banane ke liye
+import requests 
+import uuid 
 import os
 
 router = APIRouter()
@@ -18,7 +18,7 @@ async def generate_post(request: PostRequest):
     parser = JsonOutputParser(pydantic_object=PostResponse)
     chain = POST_PROMPT | llm | parser
     
-    # AI se text aur image prompt generate karna
+    # Generate text and prompt for image
     response = chain.invoke({
         "topic": request.topic,
         "platform": request.platform,
@@ -28,31 +28,31 @@ async def generate_post(request: PostRequest):
     
     img_prompt = response.get("image_prompt", request.topic)
     
-    # 1. Pollinations se Image URL banana
+    # 1. Image Creation
     encoded_prompt = urllib.parse.quote(img_prompt)
     external_image_url = f"https://image.pollinations.ai/prompt/{encoded_prompt}?width=1080&height=1080&nologo=true"
     
-    # 2. Image ko download karna
+    # 2. Download Image
     try:
         img_data = requests.get(external_image_url).content
         
-        # 3. Unique file name banana (e.g., post_1234-abcd.jpg)
+        # 3. Generate a unique filename
         filename = f"post_{uuid.uuid4().hex[:8]}.jpg"
         filepath = os.path.join("images", filename)
         
-        # 4. Image ko apne folder mein save karna
+        # 4. Save the image to your local folder.
         with open(filepath, 'wb') as f:
             f.write(img_data)
             
-        # 5. Apna server URL return karna (jo FastAPI serve karega)
+        # 5. Return the URL of your FastAPI server
         local_image_url = f"http://localhost:8000/images/{filename}"
         
     except Exception as e:
-        # Agar internet issue ya error aaye toh empty URL return kare
+        # If there is an internet issue or an error, return an empty URL.
         print(f"Image download error: {e}")
         local_image_url = ""
     
-    # Response wapas bhejna
+    # Return the response
     return PostResponse(
         caption=response.get("caption", ""),
         hashtags=response.get("hashtags", []),

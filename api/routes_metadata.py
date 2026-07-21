@@ -10,20 +10,20 @@ router = APIRouter()
 async def generate_metadata(request: MetadataRequest):
     llm = get_llm()
     
-    # JSON Parser setup (Taake AI hamara response JSON mein de)
+    # JSON Parser setup (AI returns its response in JSON formate)
     parser = JsonOutputParser(pydantic_object=MetadataResponse)
     
-    # AI chain banana (Prompt -> LLM -> Parser)
+    # AI chain  (Prompt -> LLM -> Parser)
     chain = METADATA_PROMPT | llm | parser
     
-    # AI ko invoke karna
+    # AI invoke 
     response = chain.invoke({
         "transcript": request.video_transcript,
         "platform": request.platform,
         "format_instructions": parser.get_format_instructions()
     })
     
-    # Response wapas bhejna
+    # Return Response 
     return MetadataResponse(
         title=response.get("title", ""),
         description=response.get("description", ""),

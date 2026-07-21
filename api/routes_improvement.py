@@ -13,10 +13,10 @@ async def generate_improvements(request: VideoStatsRequest):
     # JSON Parser setup
     parser = JsonOutputParser(pydantic_object=ImprovementResponse)
     
-    # AI chain banana
+    # AI chain 
     chain = IMPROVEMENT_PROMPT | llm | parser
     
-    # AI ko invoke karna
+    # AI invoke k
     response = chain.invoke({
         "video_title": request.video_title,
         "views": request.views,
@@ -27,7 +27,7 @@ async def generate_improvements(request: VideoStatsRequest):
         "format_instructions": parser.get_format_instructions()
     })
     
-    # Response wapas bhejna
+    # Return Response 
     return ImprovementResponse(
         performance_analysis=response.get("performance_analysis", ""),
         identified_issues=response.get("identified_issues", []),

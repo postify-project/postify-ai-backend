@@ -14,7 +14,6 @@ from PIL import Image, ImageDraw, ImageFont
 
 router = APIRouter()
 
-# In-memory dictionary job status save karne ke liye
 thumb_jobs = {}
 
 # Background task function
@@ -22,7 +21,7 @@ def process_thumb_job(job_id: str, video_url: str):
     try:
         thumb_jobs[job_id]["status"] = "Downloading Video..."
         
-        # 1. Video download karna
+        # 1. Download Video
         video_filename = f"temp_vid_{job_id}.mp4"
         response = requests.get(video_url)
         with open(video_filename, 'wb') as f:
@@ -30,7 +29,7 @@ def process_thumb_job(job_id: str, video_url: str):
 
         thumb_jobs[job_id]["status"] = "Analyzing Video Frame..."
         
-        # 2. Video se beech ka frame nikalna
+        # 2. Extract the middle frame from the video
         cap = cv2.VideoCapture(video_filename)
         total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
         cap.set(cv2.CAP_PROP_POS_FRAMES, total_frames // 2)
@@ -40,7 +39,7 @@ def process_thumb_job(job_id: str, video_url: str):
         frame_filename = f"temp_frame_{job_id}.jpg"
         cv2.imwrite(frame_filename, frame)
         
-        # 3. AI ko frame bhejna
+        
         llm = get_vision_llm()
         parser = JsonOutputParser(pydantic_object=ThumbResponse)
         
@@ -63,7 +62,7 @@ def process_thumb_job(job_id: str, video_url: str):
         
         thumb_jobs[job_id]["status"] = "Generating Thumbnail..."
         
-        # 4. Thumbnail Background Generate karna
+        # 4. Generate Thumbnail Background 
         img_prompt = parsed_data.get("image_prompt", "Eye-catching YouTube thumbnail background, highly detailed, vibrant colors")
         encoded_prompt = urllib.parse.quote(img_prompt)
         
@@ -81,7 +80,7 @@ def process_thumb_job(job_id: str, video_url: str):
         with open(thumb_path, 'wb') as f:
             f.write(bg_data)
         
-        # 5. Thumbnail par Text likhna
+        # 5. text on Thumbnail 
         img = Image.open(thumb_path).convert("RGB")
         draw = ImageDraw.Draw(img)
         try:
@@ -105,14 +104,14 @@ def process_thumb_job(job_id: str, video_url: str):
         final_thumb_path = os.path.join("images", final_thumb_filename)
         img.save(final_thumb_path, "JPEG")
         
-        # 6. Temp files delete karna
+        # 6. Delete Temp file
         if os.path.exists(video_filename): os.remove(video_filename)
         if os.path.exists(frame_filename): os.remove(frame_filename)
         if os.path.exists(thumb_path): os.remove(thumb_path)
         
         local_thumb_url = f"http://localhost:8000/images/{final_thumb_filename}"
         
-        # Job status update
+        # update Job status 
         thumb_jobs[job_id] = {
             "status": "completed",
             "caption": caption,
@@ -130,7 +129,7 @@ def process_thumb_job(job_id: str, video_url: str):
             "error": str(e)
         }
 
-# Endpoint 1: Thumbnail generation start karna
+# Endpoint 1: Start Thumbnail generation 
 @router.post("/", response_model=ThumbJobResponse)
 async def start_thumb_generation(request: ThumbRequest, background_tasks: BackgroundTasks):
     job_id = uuid.uuid4().hex[:8]
@@ -140,7 +139,7 @@ async def start_thumb_generation(request: ThumbRequest, background_tasks: Backgr
     
     return ThumbJobResponse(job_id=job_id, status="queued")
 
-# Endpoint 2: Job status check karna
+# Endpoint 2:check Job status  
 @router.get("/status/{job_id}", response_model=ThumbStatusResponse)
 def get_thumb_status(job_id: str):
     if job_id in thumb_jobs:
