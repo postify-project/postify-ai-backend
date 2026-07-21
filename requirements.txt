@@ -5,3 +5,10 @@ langchain-groq
 langchain-core
 pydantic
 python-dotenv
+gtts
+moviepy
+edge-tts
+opencv-python
+pillow
+requests
+langchain-google-genai

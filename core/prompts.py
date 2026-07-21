@@ -60,3 +60,65 @@ POST_PROMPT = PromptTemplate(
     {format_instructions}
     """
 )
+
+# --- Naya Improvement Engine Prompt ---
+IMPROVEMENT_PROMPT = PromptTemplate(
+    input_variables=["video_title", "views", "watch_time", "ctr", "likes", "comments", "format_instructions"],
+    template="""
+    You are an expert YouTube and Social Media Growth Strategist.
+    Analyze the following performance metrics for a video and provide actionable recommendations.
+    
+    Video Title: {video_title}
+    Total Views: {views}
+    Average Watch Time: {watch_time}%
+    Click-Through Rate (CTR): {ctr}%
+    Likes: {likes}
+    Comments: {comments}
+    
+    Based on these metrics (industry averages are usually 50% watch time and 2-5% CTR), identify the core issues 
+    (e.g., bad thumbnail, weak hook, boring content) and provide specific, actionable suggestions to improve future videos.
+    
+    {format_instructions}
+    """
+)
+
+# --- Video Generation Prompt ---
+VIDEO_SCRIPT_PROMPT = PromptTemplate(
+    input_variables=["prompt", "format_instructions"],
+    template="""
+    You are a professional video director. Create a very short 2-scene video script about: "{prompt}".
+    
+    For each scene, provide:
+    1. "visuals": A highly detailed prompt for an AI image generator (no text in image).
+    2. "voiceover": A single sentence narration for that scene (max 10 words).
+    
+    Keep it exactly to 2 scenes to keep processing fast.
+    {format_instructions}
+    """
+)
+
+# --- Thumbnail & Caption Generation Prompt ---
+THUMB_PROMPT = PromptTemplate(
+    input_variables=["format_instructions"],
+    template="""
+    You are an expert YouTube/Social Media Thumbnail designer and SEO expert.
+    Analyze the provided video frame.
+    
+    1. Generate a highly engaging, clickbait 'thumbnail_text' (max 4 words) that makes people want to click.
+    2. Generate a catchy 'caption' describing the video.
+    3. Generate 5 relevant 'hashtags'.
+    
+    {format_instructions}
+    """
+)
+
+# --- Video Translation Prompt ---
+TRANSLATE_PROMPT = PromptTemplate(
+    input_variables=["text", "target_language"],
+    template="""
+    You are an expert translator. Translate the following video transcript into {target_language}.
+    Keep the tone natural and conversational. Only return the translated text, nothing else.
+    
+    Transcript: {text}
+    """
+)

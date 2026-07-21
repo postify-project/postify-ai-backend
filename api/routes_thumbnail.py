@@ -1,0 +1,146 @@
+from fastapi import APIRouter, BackgroundTasks
+from schemas.thumbnail_schema import ThumbRequest, ThumbJobResponse, ThumbStatusResponse, ThumbResponse
+from core.llm_setup import get_vision_llm
+from core.prompts import THUMB_PROMPT
+from langchain_core.output_parsers import JsonOutputParser
+from langchain_core.messages import HumanMessage
+import cv2
+import requests
+import urllib.parse
+import uuid
+import os
+import base64
+from PIL import Image, ImageDraw, ImageFont
+
+router = APIRouter()
+
+# In-memory dictionary job status save karne ke liye
+thumb_jobs = {}
+
+# Background task function
+def process_thumb_job(job_id: str, video_url: str):
+    try:
+        thumb_jobs[job_id]["status"] = "Downloading Video..."
+        
+        # 1. Video download karna
+        video_filename = f"temp_vid_{job_id}.mp4"
+        response = requests.get(video_url)
+        with open(video_filename, 'wb') as f:
+            f.write(response.content)
+
+        thumb_jobs[job_id]["status"] = "Analyzing Video Frame..."
+        
+        # 2. Video se beech ka frame nikalna
+        cap = cv2.VideoCapture(video_filename)
+        total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+        cap.set(cv2.CAP_PROP_POS_FRAMES, total_frames // 2)
+        ret, frame = cap.read()
+        cap.release()
+        
+        frame_filename = f"temp_frame_{job_id}.jpg"
+        cv2.imwrite(frame_filename, frame)
+        
+        # 3. AI ko frame bhejna
+        llm = get_vision_llm()
+        parser = JsonOutputParser(pydantic_object=ThumbResponse)
+        
+        with open(frame_filename, "rb") as image_file:
+            image_data = base64.b64encode(image_file.read()).decode('utf-8')
+            
+        message = HumanMessage(
+            content=[
+                {"type": "text", "text": THUMB_PROMPT.format(format_instructions=parser.get_format_instructions())},
+                {"type": "image_url", "image_url": {"url": f"data:image/jpeg;base64,{image_data}"}}
+            ]
+        )
+        
+        ai_response = llm.invoke([message])
+        parsed_data = parser.parse(ai_response.content)
+        
+        thumb_text = parsed_data.get("thumbnail_text", "Awesome Video!")
+        caption = parsed_data.get("caption", "")
+        hashtags = parsed_data.get("hashtags", [])
+        
+        thumb_jobs[job_id]["status"] = "Generating Thumbnail..."
+        
+        # 4. Thumbnail Background Generate karna
+        img_prompt = f"Eye-catching YouTube thumbnail background, highly detailed, vibrant colors, related to the video"
+        encoded_prompt = urllib.parse.quote(img_prompt)
+        bg_url = f"https://image.pollinations.ai/prompt/{encoded_prompt}?width=1280&height=720&nologo=true"
+        bg_data = requests.get(bg_url).content
+        thumb_path = f"temp_thumb_{job_id}.jpg"
+        with open(thumb_path, 'wb') as f:
+            f.write(bg_data)
+        
+        # 5. Thumbnail par Text likhna
+        img = Image.open(thumb_path).convert("RGB")
+        draw = ImageDraw.Draw(img)
+        try:
+            font = ImageFont.truetype("arial.ttf", 100)
+        except:
+            font = ImageFont.load_default()
+            
+        text_bbox = draw.textbbox((0, 0), thumb_text, font=font)
+        text_width = text_bbox[2] - text_bbox[0]
+        text_height = text_bbox[3] - text_bbox[1]
+        
+        x = (img.width - text_width) / 2
+        y = img.height - text_height - 100
+        
+        for adj in [-2, 2]:
+            draw.text((x+adj, y), thumb_text, fill="black", font=font)
+            draw.text((x, y+adj), thumb_text, fill="black", font=font)
+        draw.text((x, y), thumb_text, fill="yellow", font=font)
+        
+        final_thumb_filename = f"thumb_{job_id}.jpg"
+        final_thumb_path = os.path.join("images", final_thumb_filename)
+        img.save(final_thumb_path, "JPEG")
+        
+        # 6. Temp files delete karna
+        if os.path.exists(video_filename): os.remove(video_filename)
+        if os.path.exists(frame_filename): os.remove(frame_filename)
+        if os.path.exists(thumb_path): os.remove(thumb_path)
+        
+        local_thumb_url = f"http://localhost:8000/images/{final_thumb_filename}"
+        
+        # Job status update
+        thumb_jobs[job_id] = {
+            "status": "completed",
+            "caption": caption,
+            "hashtags": hashtags,
+            "thumbnail_url": local_thumb_url,
+            "error": None
+        }
+        
+    except Exception as e:
+        thumb_jobs[job_id] = {
+            "status": "failed",
+            "caption": None,
+            "hashtags": None,
+            "thumbnail_url": None,
+            "error": str(e)
+        }
+
+# Endpoint 1: Thumbnail generation start karna
+@router.post("/", response_model=ThumbJobResponse)
+async def start_thumb_generation(request: ThumbRequest, background_tasks: BackgroundTasks):
+    job_id = uuid.uuid4().hex[:8]
+    thumb_jobs[job_id] = {"status": "queued", "caption": "", "hashtags": [], "thumbnail_url": "", "error": None}
+    
+    background_tasks.add_task(process_thumb_job, job_id, request.video_url)
+    
+    return ThumbJobResponse(job_id=job_id, status="queued")
+
+# Endpoint 2: Job status check karna
+@router.get("/status/{job_id}", response_model=ThumbStatusResponse)
+def get_thumb_status(job_id: str):
+    if job_id in thumb_jobs:
+        job = thumb_jobs[job_id]
+        return ThumbStatusResponse(
+            status=job["status"],
+            caption=job["caption"],
+            hashtags=job["hashtags"],
+            thumbnail_url=job["thumbnail_url"],
+            error=job["error"]
+        )
+    return ThumbStatusResponse(status="not_found")
