@@ -107,6 +107,7 @@ THUMB_PROMPT = PromptTemplate(
     1. Generate a highly engaging, clickbait 'thumbnail_text' (max 4 words) that makes people want to click.
     2. Generate a catchy 'caption' describing the video.
     3. Generate 5 relevant 'hashtags'.
+    4. Generate a highly detailed 'image_prompt' (around 15 words) for an AI image generator to create a background image for the thumbnail. The prompt MUST be based on the scene/subject seen in the video frame.
     
     {format_instructions}
     """

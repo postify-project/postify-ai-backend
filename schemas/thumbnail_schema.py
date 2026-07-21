@@ -4,18 +4,17 @@ from typing import List, Optional
 class ThumbRequest(BaseModel):
     video_url: str
 
-# Pehle wala response ab直接 nahi aayega
 class ThumbResponse(BaseModel):
     caption: str
     hashtags: List[str]
     thumbnail_url: str
+    thumbnail_text: str   # Yeh add kiya
+    image_prompt: str     # Yeh add kiya
 
-# Naya: Job ID ka response
 class ThumbJobResponse(BaseModel):
     job_id: str
     status: str
 
-# Naya: Status check karne ka response
 class ThumbStatusResponse(BaseModel):
     status: str
     caption: Optional[str] = None

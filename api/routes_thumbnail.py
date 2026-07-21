@@ -64,7 +64,16 @@ def process_thumb_job(job_id: str, video_url: str):
         thumb_jobs[job_id]["status"] = "Generating Thumbnail..."
         
         # 4. Thumbnail Background Generate karna
-        img_prompt = f"Eye-catching YouTube thumbnail background, highly detailed, vibrant colors, related to the video"
+        img_prompt = parsed_data.get("image_prompt", "Eye-catching YouTube thumbnail background, highly detailed, vibrant colors")
+        encoded_prompt = urllib.parse.quote(img_prompt)
+        
+        import random
+        seed = random.randint(1, 1000000)
+        bg_url = f"https://image.pollinations.ai/prompt/{encoded_prompt}?width=1280&height=720&nologo=true&seed={seed}"
+        bg_data = requests.get(bg_url).content
+        thumb_path = f"temp_thumb_{job_id}.jpg"
+        with open(thumb_path, 'wb') as f:
+            f.write(bg_data)
         encoded_prompt = urllib.parse.quote(img_prompt)
         bg_url = f"https://image.pollinations.ai/prompt/{encoded_prompt}?width=1280&height=720&nologo=true"
         bg_data = requests.get(bg_url).content
