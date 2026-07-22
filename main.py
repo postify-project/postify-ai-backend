@@ -4,7 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from api import routes_reply, routes_metadata, routes_post, routes_improvement, routes_video, routes_thumbnail, routes_translate 
 
-app = FastAPI(title="QRYZON AI Backend", version="1.0.0")
+app = FastAPI(title="POSTIFY AI Backend", version="1.0.0")
 
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_credentials=True, allow_methods=["*"], allow_headers=["*"])
 
