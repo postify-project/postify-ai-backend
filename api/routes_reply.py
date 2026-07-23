@@ -5,7 +5,7 @@ from core.prompts import AUTO_REPLY_PROMPT
 
 router = APIRouter()
 
-@router.post("/", response_model=ReplyResponse)
+@router.post("/", response_model=ReplyResponse, summary="Generate Comment Reply", description="Generates an appropriate, context-aware auto-reply to a user comment for a specific platform.")
 async def generate_auto_reply(request: ReplyRequest):
     
     llm = get_llm()

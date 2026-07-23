@@ -6,7 +6,7 @@ from langchain_core.output_parsers import JsonOutputParser
 
 router = APIRouter()
 
-@router.post("/", response_model=ImprovementResponse)
+@router.post("/", response_model=ImprovementResponse, summary="Analyze Video Stats", description="Analyzes video statistics (views, CTR, watch time, etc.) and provides actionable improvements and performance insights.")
 async def generate_improvements(request: VideoStatsRequest):
     llm = get_llm()
     

@@ -104,7 +104,7 @@ def process_video_job(job_id: str, prompt: str, captions: bool):
             "error": str(e)
         }
 
-@router.post("/", response_model=VideoJobResponse)
+@router.post("/", response_model=VideoJobResponse, summary="Start Video Generation Job", description="Initiates a background job to generate a script, images, and voiceover from a text prompt, combining them into a final AI-generated video.")
 async def start_video_generation(request: VideoGenRequest, background_tasks: BackgroundTasks):
     job_id = uuid.uuid4().hex[:8]
     video_jobs[job_id] = {"status": "queued", "video_url": None, "script": "", "error": None}
@@ -113,7 +113,7 @@ async def start_video_generation(request: VideoGenRequest, background_tasks: Bac
     
     return VideoJobResponse(job_id=job_id, status="queued")
 
-@router.get("/status/{job_id}", response_model=VideoStatusResponse)
+@router.get("/status/{job_id}", response_model=VideoStatusResponse, summary="Get Video Generation Job Status", description="Retrieves the current status and result (including the generated video URL and script) of a background video generation job.")
 async def get_video_status(job_id: str):
     if job_id in video_jobs:
         job = video_jobs[job_id]

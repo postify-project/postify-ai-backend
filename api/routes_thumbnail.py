@@ -130,7 +130,7 @@ def process_thumb_job(job_id: str, video_url: str):
         }
 
 # Endpoint 1: Start Thumbnail generation 
-@router.post("/", response_model=ThumbJobResponse)
+@router.post("/", response_model=ThumbJobResponse, summary="Start Thumbnail Generation Job", description="Initiates a background job to extract a frame from a video URL and generate an engaging thumbnail with text and an AI-generated background.")
 async def start_thumb_generation(request: ThumbRequest, background_tasks: BackgroundTasks):
     job_id = uuid.uuid4().hex[:8]
     thumb_jobs[job_id] = {"status": "queued", "caption": "", "hashtags": [], "thumbnail_url": "", "error": None}
@@ -140,7 +140,7 @@ async def start_thumb_generation(request: ThumbRequest, background_tasks: Backgr
     return ThumbJobResponse(job_id=job_id, status="queued")
 
 # Endpoint 2:check Job status  
-@router.get("/status/{job_id}", response_model=ThumbStatusResponse)
+@router.get("/status/{job_id}", response_model=ThumbStatusResponse, summary="Get Thumbnail Job Status", description="Retrieves the current status and result (including the final thumbnail URL) of a previously started thumbnail generation job.")
 def get_thumb_status(job_id: str):
     if job_id in thumb_jobs:
         job = thumb_jobs[job_id]

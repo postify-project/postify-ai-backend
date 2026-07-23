@@ -100,7 +100,7 @@ def process_translation_job(job_id: str, video_url: str, target_language: str):
             "error": str(e)
         }
 
-@router.post("/", response_model=TranslateJobResponse)
+@router.post("/", response_model=TranslateJobResponse, summary="Start Video Translation Job", description="Initiates a background job to extract audio from a video, translate the transcript to a target language, and generate a new voiceover combined with the original video.")
 async def start_translation(request: TranslateRequest, background_tasks: BackgroundTasks):
     job_id = uuid.uuid4().hex[:8]
     translate_jobs[job_id] = {"status": "queued", "translated_video_url": "", "original_text": "", "translated_text": "", "error": None}
@@ -109,7 +109,7 @@ async def start_translation(request: TranslateRequest, background_tasks: Backgro
     
     return TranslateJobResponse(job_id=job_id, status="queued")
 
-@router.get("/status/{job_id}", response_model=TranslateStatusResponse)
+@router.get("/status/{job_id}", response_model=TranslateStatusResponse, summary="Get Video Translation Job Status", description="Retrieves the current status and result of a background video translation job.")
 async def get_translation_status(job_id: str):
     if job_id in translate_jobs:
         job = translate_jobs[job_id]

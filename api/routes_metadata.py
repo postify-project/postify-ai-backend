@@ -6,7 +6,7 @@ from langchain_core.output_parsers import JsonOutputParser
 
 router = APIRouter()
 
-@router.post("/", response_model=MetadataResponse)
+@router.post("/", response_model=MetadataResponse, summary="Generate Video Metadata", description="Generates an SEO-optimized title, description, and relevant tags based on a provided video transcript and platform.")
 async def generate_metadata(request: MetadataRequest):
     llm = get_llm()
     
