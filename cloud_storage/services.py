@@ -1,3 +1,5 @@
+import cloudinary
+import cloudinary.uploader
 from typing import Optional, Dict, Any
 import logging
 
@@ -8,7 +10,6 @@ def upload_image(file_path: str, folder: str = "postify/images") -> Optional[Dic
     Uploads an image to Cloudinary securely and returns the upload response.
     Returns a dictionary containing 'secure_url', 'public_id', etc.
     """
-    import cloudinary.uploader
     try:
         response = cloudinary.uploader.upload(
             file_path,
@@ -24,7 +25,6 @@ def upload_video(file_path: str, folder: str = "postify/videos") -> Optional[Dic
     """
     Uploads a video to Cloudinary securely. Uses chunked upload for robust handling of larger files.
     """
-    import cloudinary.uploader
     try:
         response = cloudinary.uploader.upload_large(
             file_path,
@@ -41,7 +41,6 @@ def delete_media(public_id: str, resource_type: str = "image") -> bool:
     """
     Deletes a media asset from Cloudinary using its public_id.
     """
-    import cloudinary.uploader
     try:
         response = cloudinary.uploader.destroy(public_id, resource_type=resource_type)
         return response.get("result") == "ok"
