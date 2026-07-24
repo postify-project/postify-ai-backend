@@ -129,3 +129,25 @@ Yahan FastAPI automatically **Swagger UI** generate karta hai jahan Web Team saa
 | `GET` | `/api/ai/thumbnail/status/{job_id}` | Check thumbnail status |
 | `POST` | `/api/ai/translate/` | Start video translation (*Returns Job ID*) |
 | `GET` | `/api/ai/translate/status/{job_id}` | Check translation status |
+
+---
+
+## 💻 Frontend Team Guidance (Consuming Media)
+
+The backend now returns dynamically generated, fully-qualified URLs for all media assets (images and videos). You do not need to manually prefix them with the server domain.
+
+### 1. Direct Media URLs
+Endpoints that generate media (like the Social Media Post generator) will return the media URL directly in the JSON response (e.g., `"image_url": "http://api.yourdomain.com/images/post_123456.jpg"`). 
+You can use these URLs directly in your frontend tags:
+```html
+<img src={response.data.image_url} alt="Generated Post Image" />
+```
+
+### 2. Handling Background Jobs
+Heavy tasks (Video Generation, Thumbnail Creation, Video Translation) run in the background to prevent server timeouts. 
+* **Step 1:** Call the generation endpoint (e.g., `POST /api/ai/video/`). It returns a `job_id` and `status: "queued"`.
+* **Step 2:** Poll the status endpoint (e.g., `GET /api/ai/video/status/{job_id}`) every few seconds.
+* **Step 3:** When the status changes to `"completed"`, the response will contain the fully-qualified `video_url` or `thumbnail_url`.
+
+### 3. CORS & Static Files
+The backend is configured with permissive CORS, so you can call it from any frontend domain. The media files are served statically from the `/images` and `/videos` directories on the backend.
