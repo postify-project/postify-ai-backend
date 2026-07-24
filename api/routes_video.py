@@ -1,4 +1,4 @@
-from fastapi import APIRouter, BackgroundTasks
+from fastapi import APIRouter, BackgroundTasks, Request
 from schemas.video_schema import VideoGenRequest, VideoJobResponse, VideoStatusResponse, VideoScriptResponse
 from core.llm_setup import get_llm
 from core.prompts import VIDEO_SCRIPT_PROMPT
@@ -15,7 +15,7 @@ router = APIRouter()
 video_jobs = {}
 
 
-def process_video_job(job_id: str, prompt: str, captions: bool):
+def process_video_job(job_id: str, prompt: str, captions: bool, base_url: str):
     try:
         video_jobs[job_id]["status"] = "Generating Script..."
         llm = get_llm()
@@ -87,7 +87,7 @@ def process_video_job(job_id: str, prompt: str, captions: bool):
             if os.path.exists(file):
                 os.remove(file)
                 
-        local_video_url = f"http://localhost:8000/videos/{video_filename}"
+        local_video_url = f"{base_url}videos/{video_filename}"
         
         video_jobs[job_id] = {
             "status": "completed",
@@ -105,11 +105,11 @@ def process_video_job(job_id: str, prompt: str, captions: bool):
         }
 
 @router.post("/", response_model=VideoJobResponse, summary="Start Video Generation Job", description="Initiates a background job to generate a script, images, and voiceover from a text prompt, combining them into a final AI-generated video.")
-async def start_video_generation(request: VideoGenRequest, background_tasks: BackgroundTasks):
+async def start_video_generation(request: VideoGenRequest, background_tasks: BackgroundTasks, req: Request):
     job_id = uuid.uuid4().hex[:8]
     video_jobs[job_id] = {"status": "queued", "video_url": None, "script": "", "error": None}
     
-    background_tasks.add_task(process_video_job, job_id, request.prompt, request.captions)
+    background_tasks.add_task(process_video_job, job_id, request.prompt, request.captions, str(req.base_url))
     
     return VideoJobResponse(job_id=job_id, status="queued")
 

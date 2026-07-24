@@ -1,4 +1,4 @@
-from fastapi import APIRouter, BackgroundTasks
+from fastapi import APIRouter, BackgroundTasks, Request
 from schemas.translate_schema import TranslateRequest, TranslateJobResponse, TranslateStatusResponse
 from core.llm_setup import get_llm
 from core.prompts import TRANSLATE_PROMPT
@@ -24,7 +24,7 @@ TTS_VOICES = {
 }
 
 
-def process_translation_job(job_id: str, video_url: str, target_language: str):
+def process_translation_job(job_id: str, video_url: str, target_language: str, base_url: str):
     try:
         video_filename = f"temp_trans_vid_{job_id}.mp4"
         audio_filename = f"temp_trans_audio_{job_id}.mp3"
@@ -81,7 +81,7 @@ def process_translation_job(job_id: str, video_url: str, target_language: str):
         for f in [video_filename, audio_filename, new_audio_filename]:
             if os.path.exists(f): os.remove(f)
                 
-        local_trans_url = f"http://localhost:8000/videos/{final_video_filename}"
+        local_trans_url = f"{base_url}videos/{final_video_filename}"
         
         translate_jobs[job_id] = {
             "status": "completed",
@@ -101,11 +101,11 @@ def process_translation_job(job_id: str, video_url: str, target_language: str):
         }
 
 @router.post("/", response_model=TranslateJobResponse, summary="Start Video Translation Job", description="Initiates a background job to extract audio from a video, translate the transcript to a target language, and generate a new voiceover combined with the original video.")
-async def start_translation(request: TranslateRequest, background_tasks: BackgroundTasks):
+async def start_translation(request: TranslateRequest, background_tasks: BackgroundTasks, req: Request):
     job_id = uuid.uuid4().hex[:8]
     translate_jobs[job_id] = {"status": "queued", "translated_video_url": "", "original_text": "", "translated_text": "", "error": None}
     
-    background_tasks.add_task(process_translation_job, job_id, request.video_url, request.target_language)
+    background_tasks.add_task(process_translation_job, job_id, request.video_url, request.target_language, str(req.base_url))
     
     return TranslateJobResponse(job_id=job_id, status="queued")
 

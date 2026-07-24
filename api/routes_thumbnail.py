@@ -1,4 +1,4 @@
-from fastapi import APIRouter, BackgroundTasks
+from fastapi import APIRouter, BackgroundTasks, Request
 from schemas.thumbnail_schema import ThumbRequest, ThumbJobResponse, ThumbStatusResponse, ThumbResponse
 from core.llm_setup import get_vision_llm
 from core.prompts import THUMB_PROMPT
@@ -17,7 +17,7 @@ router = APIRouter()
 thumb_jobs = {}
 
 # Background task function
-def process_thumb_job(job_id: str, video_url: str):
+def process_thumb_job(job_id: str, video_url: str, base_url: str):
     try:
         thumb_jobs[job_id]["status"] = "Downloading Video..."
         
@@ -109,7 +109,7 @@ def process_thumb_job(job_id: str, video_url: str):
         if os.path.exists(frame_filename): os.remove(frame_filename)
         if os.path.exists(thumb_path): os.remove(thumb_path)
         
-        local_thumb_url = f"http://localhost:8000/images/{final_thumb_filename}"
+        local_thumb_url = f"{base_url}images/{final_thumb_filename}"
         
         # update Job status 
         thumb_jobs[job_id] = {
@@ -131,11 +131,11 @@ def process_thumb_job(job_id: str, video_url: str):
 
 # Endpoint 1: Start Thumbnail generation 
 @router.post("/", response_model=ThumbJobResponse, summary="Start Thumbnail Generation Job", description="Initiates a background job to extract a frame from a video URL and generate an engaging thumbnail with text and an AI-generated background.")
-async def start_thumb_generation(request: ThumbRequest, background_tasks: BackgroundTasks):
+async def start_thumb_generation(request: ThumbRequest, background_tasks: BackgroundTasks, req: Request):
     job_id = uuid.uuid4().hex[:8]
     thumb_jobs[job_id] = {"status": "queued", "caption": "", "hashtags": [], "thumbnail_url": "", "error": None}
     
-    background_tasks.add_task(process_thumb_job, job_id, request.video_url)
+    background_tasks.add_task(process_thumb_job, job_id, request.video_url, str(req.base_url))
     
     return ThumbJobResponse(job_id=job_id, status="queued")
 

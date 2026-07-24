@@ -1,4 +1,4 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Request
 from schemas.post_schema import PostRequest, PostResponse
 from core.llm_setup import get_llm
 from core.prompts import POST_PROMPT
@@ -11,7 +11,7 @@ import os
 router = APIRouter()
 
 @router.post("/", response_model=PostResponse, summary="Generate Social Media Post", description="Generates a complete social media post including caption, hashtags, call-to-action, and a relevant AI-generated image based on the provided topic.")
-async def generate_post(request: PostRequest):
+async def generate_post(request: PostRequest, req: Request):
     llm = get_llm()
     
     # JSON Parser setup
@@ -45,7 +45,8 @@ async def generate_post(request: PostRequest):
             f.write(img_data)
             
         # 5. Return the URL of your FastAPI server
-        local_image_url = f"http://localhost:8000/images/{filename}"
+        base_url = str(req.base_url)
+        local_image_url = f"{base_url}images/{filename}"
         
     except Exception as e:
         # If there is an internet issue or an error, return an empty URL.
