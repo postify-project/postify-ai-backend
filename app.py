@@ -49,6 +49,13 @@ with gr.Blocks(title="Postify AI Backend") as demo:
         "- ⚡ **API Base:** `/api/ai/`\n"
         "- 🏥 **Health Check:** [/health](/health)\n"
     )
+    
+    # CRITICAL: We MUST wire the @spaces.GPU function to a Gradio event!
+    # If ZeroGPU doesn't find a Gradio component triggering a GPU function,
+    # it immediately forces the container to shut down!
+    btn = gr.Button("Check GPU Status (Required for ZeroGPU Space)")
+    out = gr.Textbox(label="Status")
+    btn.click(fn=_gpu_placeholder, inputs=[], outputs=out)
 
 # ─── Mount Gradio onto FastAPI App ───────────────────────────────────────────
 # Hugging Face Spaces automatically discovers the `app` object in app.py
