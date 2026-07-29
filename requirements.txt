@@ -12,3 +12,5 @@ opencv-python
 pillow
 requests
 langchain-google-genai
+gradio
+python-multipart
