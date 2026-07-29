@@ -27,6 +27,17 @@ except ImportError:
     sys.modules["huggingface_hub"].HfFolder = _HfFolderStub  # type: ignore[attr-defined]
 # ──────────────────────────────────────────────────────────────────────────────
 
+# ─── ZeroGPU Compatibility ───────────────────────────────────────────────────
+# If ZeroGPU is selected as hardware, HF requires at least one @spaces.GPU function
+try:
+    import spaces
+    @spaces.GPU
+    def _gpu_init_check():
+        return "ZeroGPU Ready"
+except Exception:
+    pass
+# ──────────────────────────────────────────────────────────────────────────────
+
 import gradio as gr
 import uvicorn
 from main import app as fastapi_app
