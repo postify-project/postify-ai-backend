@@ -24,6 +24,15 @@ app.include_router(routes_thumbnail.router, prefix="/api/ai/thumbnail", tags=["A
 app.include_router(routes_translate.router, prefix="/api/ai/translate", tags=["AI Video Translator"])
 app.include_router(routes_context.router, prefix="/api/ai/context", tags=["User Context"])
 
-@app.get("/health")
+@app.get("/")
 def read_root():
-    return {"status": "POSTIFY AI Backend is running successfully!"}
+    return {
+        "status": "online",
+        "message": "POSTIFY AI Backend is running successfully!",
+        "ui_dashboard": "/dashboard",
+        "documentation": "/docs"
+    }
+
+@app.get("/health")
+def health_check():
+    return {"status": "POSTIFY AI Backend is healthy!"}
