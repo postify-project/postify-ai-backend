@@ -3,6 +3,9 @@ FROM python:3.10
 # Set the working directory to /code
 WORKDIR /code
 
+# Install ffmpeg for MoviePy/Edge-TTS
+RUN apt-get update && apt-get install -y ffmpeg && rm -rf /var/lib/apt/lists/*
+
 # Copy requirements file first to leverage Docker cache
 COPY ./requirements.txt /code/requirements.txt
 

@@ -3,9 +3,7 @@ title: Postify AI Backend
 emoji: 🚀
 colorFrom: purple
 colorTo: pink
-sdk: gradio
-sdk_version: "4.44.1"
-app_file: app.py
+sdk: docker
 pinned: false
 short_description: Postify AI FastAPI backend deployment
 ---
