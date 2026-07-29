@@ -1,6 +1,8 @@
 import sys
 
 # ─── Compatibility shim ────────────────────────────────────────────────────────
+# Gradio 4.44.1 attempts to import HfFolder from huggingface_hub, which was removed
+# in newer huggingface_hub versions. This monkeypatch stubs HfFolder before Gradio loads.
 try:
     from huggingface_hub import HfFolder  # noqa: F401
 except ImportError:
@@ -41,7 +43,7 @@ import gradio as gr
 import uvicorn
 from main import app as fastapi_app
 
-# Create a clean Gradio interface as the landing page
+# Create a clean Gradio 4 interface as landing page
 with gr.Blocks(title="Postify AI Backend") as demo:
     gr.Markdown("# 🚀 Postify AI Backend")
     gr.Markdown(
@@ -51,7 +53,7 @@ with gr.Blocks(title="Postify AI Backend") as demo:
         "- 🏥 **Health Check:** [/health](/health)\n"
     )
 
-# Mount Gradio at root "/" so Hugging Face health check (/config, /info) succeeds
+# Mount Gradio 4 at root "/" so Hugging Face health check succeeds without Node.js SSR
 app = gr.mount_gradio_app(fastapi_app, demo, path="/")
 
 if __name__ == "__main__":

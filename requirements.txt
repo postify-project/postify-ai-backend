@@ -12,7 +12,7 @@ edge-tts
 opencv-python-headless
 pillow
 requests
-gradio>=5.0.0
+gradio==4.44.1
 python-multipart
 cloudinary
 imageio-ffmpeg
