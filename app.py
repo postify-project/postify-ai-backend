@@ -32,9 +32,10 @@ try:
     import spaces
     @spaces.GPU
     def _gpu_placeholder():
-        return True
+        return "ZeroGPU is active and working!"  # Return a string instead of True
 except Exception:
     pass
+
 # ──────────────────────────────────────────────────────────────────────────────
 
 import gradio as gr
