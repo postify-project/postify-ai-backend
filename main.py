@@ -2,7 +2,7 @@ import os
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-from api import routes_reply, routes_metadata, routes_post, routes_improvement, routes_video, routes_thumbnail, routes_translate 
+from api import routes_reply, routes_metadata, routes_post, routes_improvement, routes_video, routes_thumbnail, routes_translate, routes_context 
 
 app = FastAPI(title="POSTIFY AI Backend", version="1.0.0")
 
@@ -22,6 +22,7 @@ app.include_router(routes_improvement.router, prefix="/api/ai/improve", tags=["A
 app.include_router(routes_video.router, prefix="/api/ai/video", tags=["AI Video Generator"])
 app.include_router(routes_thumbnail.router, prefix="/api/ai/thumbnail", tags=["AI Thumbnail & Caption"])
 app.include_router(routes_translate.router, prefix="/api/ai/translate", tags=["AI Video Translator"])
+app.include_router(routes_context.router, prefix="/api/ai/context", tags=["User Context"])
 
 @app.get("/")
 def read_root():
