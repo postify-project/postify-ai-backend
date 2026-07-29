@@ -1,16 +1,15 @@
 import gradio as gr
-from main import app
-import uvicorn
+from main import app as fastapi_app
 
-# We create a simple Gradio interface
-def greet():
-    return "POSTIFY AI FastAPI Backend is up and running! Visit /docs for the API documentation."
+# A minimal Gradio interface to satisfy HF Spaces Gradio SDK requirement.
+# All actual API routes are served via FastAPI (/api/ai/...)
+with gr.Blocks() as demo:
+    gr.Markdown("## 🚀 Postify AI Backend")
+    gr.Markdown(
+        "This is the Postify AI FastAPI backend running on Hugging Face Spaces.\n\n"
+        "**API Docs:** [/docs](/docs)\n\n"
+        "**Base URL for all endpoints:** `/api/ai/`"
+    )
 
-demo = gr.Interface(fn=greet, inputs=[], outputs="text", title="Postify AI Backend")
-
-# Mount the Gradio app onto the FastAPI app
-# This satisfies Hugging Face's Gradio SDK requirements while keeping your FastAPI routes fully functional
-app = gr.mount_gradio_app(app, demo, path="/")
-
-if __name__ == "__main__":
-    uvicorn.run(app, host="0.0.0.0", port=7860)
+# Mount FastAPI app onto Gradio's ASGI app - Gradio 5 compatible
+app = gr.mount_gradio_app(fastapi_app, demo, path="/ui")
