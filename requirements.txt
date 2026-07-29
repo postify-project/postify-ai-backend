@@ -9,9 +9,10 @@ python-dotenv
 gtts
 moviepy
 edge-tts
-opencv-python
+opencv-python-headless
 pillow
 requests
-gradio>=4.0.0
+gradio>=5.0.0
 python-multipart
 cloudinary
+imageio-ffmpeg

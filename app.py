@@ -1,10 +1,8 @@
 import sys
 
 # ─── Compatibility shim ────────────────────────────────────────────────────────
-# Newer versions of huggingface_hub removed HfFolder, but gradio[oauth]==4.x
-# still imports it. We inject a stub before gradio loads to avoid ImportError.
 try:
-    from huggingface_hub import HfFolder  # noqa: F401 - already exists, skip
+    from huggingface_hub import HfFolder  # noqa: F401
 except ImportError:
     import types
     import huggingface_hub
@@ -30,16 +28,20 @@ except ImportError:
 # ──────────────────────────────────────────────────────────────────────────────
 
 import gradio as gr
+import uvicorn
 from main import app as fastapi_app
 
-# Minimal Gradio UI – all real traffic goes through FastAPI routes at /api/ai/
+# Create a clean Gradio interface as the landing page
 with gr.Blocks(title="Postify AI Backend") as demo:
-    gr.Markdown("## 🚀 Postify AI Backend")
+    gr.Markdown("# 🚀 Postify AI Backend")
     gr.Markdown(
-        "The Postify AI FastAPI backend is **running**.\n\n"
-        "- 📖 **API Docs:** [/docs](/docs)\n"
-        "- ⚡ **Base URL:** `/api/ai/`"
+        "The Postify AI FastAPI backend is running successfully!\n\n"
+        "- 📖 **Interactive API Documentation (Swagger):** [/docs](/docs)\n"
+        "- ⚡ **Base API Route:** `/api/ai/`\n"
     )
 
-# Mount FastAPI under the Gradio ASGI app
+# Mount the Gradio interface onto the FastAPI app
 app = gr.mount_gradio_app(fastapi_app, demo, path="/ui")
+
+if __name__ == "__main__":
+    uvicorn.run(app, host="0.0.0.0", port=7860)
