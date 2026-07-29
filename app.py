@@ -28,7 +28,6 @@ except ImportError:
 # ──────────────────────────────────────────────────────────────────────────────
 
 # ─── ZeroGPU Compatibility ───────────────────────────────────────────────────
-# If ZeroGPU is selected as hardware, HF requires at least one @spaces.GPU function
 try:
     import spaces
     @spaces.GPU
@@ -49,10 +48,11 @@ with gr.Blocks(title="Postify AI Backend") as demo:
         "The Postify AI FastAPI backend is running successfully!\n\n"
         "- 📖 **Interactive API Documentation (Swagger):** [/docs](/docs)\n"
         "- ⚡ **Base API Route:** `/api/ai/`\n"
+        "- 🏥 **Health Check:** [/health](/health)\n"
     )
 
-# Mount the Gradio interface onto the FastAPI app
-app = gr.mount_gradio_app(fastapi_app, demo, path="/ui")
+# Mount Gradio at root "/" so Hugging Face health check (/config, /info) succeeds
+app = gr.mount_gradio_app(fastapi_app, demo, path="/")
 
 if __name__ == "__main__":
-    uvicorn.run(app, host="0.0.0.0", port=7860)
+    uvicorn.run("app:app", host="0.0.0.0", port=7860)

@@ -24,6 +24,6 @@ app.include_router(routes_thumbnail.router, prefix="/api/ai/thumbnail", tags=["A
 app.include_router(routes_translate.router, prefix="/api/ai/translate", tags=["AI Video Translator"])
 app.include_router(routes_context.router, prefix="/api/ai/context", tags=["User Context"])
 
-@app.get("/")
+@app.get("/health")
 def read_root():
-    return {"status": "QRYZON AI Backend is running successfully!"}
+    return {"status": "POSTIFY AI Backend is running successfully!"}
