@@ -1,5 +1,4 @@
 import sys
-import os
 
 # ─── HfFolder Compatibility Shim ─────────────────────────────────────────────
 # Must run before `import gradio` since Gradio 4.x imports HfFolder at load time.
@@ -28,9 +27,7 @@ except ImportError:
     sys.modules["huggingface_hub"].HfFolder = _HfFolderStub
 # ──────────────────────────────────────────────────────────────────────────────
 
-import gradio as gr
-
-# ─── ZeroGPU decorator (required if Space hardware = ZeroGPU) ─────────────────
+# ─── ZeroGPU Compatibility ───────────────────────────────────────────────────
 try:
     import spaces
     @spaces.GPU
@@ -40,39 +37,20 @@ except Exception:
     pass
 # ──────────────────────────────────────────────────────────────────────────────
 
-# ─── Import FastAPI app and all its routers from main.py ──────────────────────
+import gradio as gr
 from main import app as fastapi_app
 
-# ─── Build the Gradio UI ─────────────────────────────────────────────────────
+# ─── Build Gradio Landing Page ───────────────────────────────────────────────
 with gr.Blocks(title="Postify AI Backend") as demo:
     gr.Markdown("# 🚀 Postify AI Backend")
     gr.Markdown(
         "The Postify AI FastAPI backend is **running** on Hugging Face Spaces.\n\n"
-        "- 📖 **Swagger Docs:** [Open API Docs](/docs)\n"
+        "- 📖 **Swagger Docs:** [/docs](/docs)\n"
         "- ⚡ **API Base:** `/api/ai/`\n"
-        "- 🏥 **Health:** [/health](/health)\n"
+        "- 🏥 **Health Check:** [/health](/health)\n"
     )
 
-# ─── Mount ALL FastAPI routes onto Gradio's internal ASGI app ─────────────────
-# This is the KEY: Gradio's demo.launch() creates its own FastAPI app internally.
-# We attach our routers and middleware to that internal app BEFORE launch.
-gradio_fastapi = demo.app
-
-# Copy CORS middleware
-from fastapi.middleware.cors import CORSMiddleware
-gradio_fastapi.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
-# Copy all routes from our FastAPI app
-for route in fastapi_app.routes:
-    gradio_fastapi.routes.append(route)
-
-# ─── Launch ──────────────────────────────────────────────────────────────────
-# demo.launch() starts Gradio's own Uvicorn server. This is what HF Spaces
-# Gradio SDK expects. Do NOT call uvicorn.run() separately.
-demo.launch(server_name="0.0.0.0", server_port=7860)
+# ─── Mount Gradio onto FastAPI App ───────────────────────────────────────────
+# Hugging Face Spaces automatically discovers the `app` object in app.py
+# and serves it using its internal ASGI server on port 7860.
+app = gr.mount_gradio_app(fastapi_app, demo, path="/")
