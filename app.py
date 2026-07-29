@@ -60,7 +60,7 @@ with gr.Blocks(title="Postify AI Backend") as demo:
 # ─── Mount Gradio onto FastAPI App ───────────────────────────────────────────
 # Hugging Face Spaces automatically discovers the `app` object in app.py
 # and serves it using its internal ASGI server on port 7860.
-app = gr.mount_gradio_app(fastapi_app, demo, path="/")
+app = gr.mount_gradio_app(fastapi_app, demo, path="/dashboard")
 
 if __name__ == "__main__":
     import uvicorn
