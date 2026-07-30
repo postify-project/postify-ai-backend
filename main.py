@@ -3,6 +3,10 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from api import routes_reply, routes_metadata, routes_post, routes_improvement, routes_video, routes_thumbnail, routes_translate, routes_context 
+from cloud_storage.config import init_cloudinary
+
+# Initialize Cloudinary configuration
+init_cloudinary()
 
 app = FastAPI(title="POSTIFY AI Backend", version="1.0.0")
 
