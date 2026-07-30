@@ -42,7 +42,7 @@ langgraph-sdk==0.4.2
 langsmith==0.10.10
 moviepy==2.2.1
 multidict==6.7.1
-numpy>=1.26.4,<2.0.0
+numpy==2.2.6
 opencv-python==5.0.0.93
 orjson==3.11.9
 ormsgpack==1.12.2
