@@ -3,6 +3,7 @@ from schemas.video_schema import VideoGenRequest, VideoJobResponse, VideoStatusR
 from core.llm_setup import get_llm
 from core.prompts import VIDEO_SCRIPT_PROMPT
 from langchain_core.output_parsers import JsonOutputParser
+from cloud_storage.services import upload_video
 import urllib.parse
 import requests
 import uuid
@@ -86,12 +87,20 @@ def process_video_job(job_id: str, prompt: str, captions: bool, base_url: str):
         for file in temp_files:
             if os.path.exists(file):
                 os.remove(file)
-                
-        local_video_url = f"{base_url}videos/{video_filename}"
+        
+        # Upload to Cloudinary and get permanent URL
+        video_url = ""
+        upload_result = upload_video(video_filepath, folder="postify/videos")
+        if upload_result:
+            video_url = upload_result.get("secure_url", "")
+        
+        # Clean up local video file after upload
+        if os.path.exists(video_filepath):
+            os.remove(video_filepath)
         
         video_jobs[job_id] = {
             "status": "completed",
-            "video_url": local_video_url,
+            "video_url": video_url,
             "script": full_script_text.strip(),
             "error": None
         }

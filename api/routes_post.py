@@ -3,6 +3,7 @@ from schemas.post_schema import PostRequest, PostResponse
 from core.llm_setup import get_llm
 from core.prompts import POST_PROMPT
 from langchain_core.output_parsers import JsonOutputParser
+from cloud_storage.services import upload_image
 import urllib.parse
 import requests 
 import uuid 
@@ -28,36 +29,38 @@ async def generate_post(request: PostRequest, req: Request):
     
     img_prompt = response.get("image_prompt", request.topic)
     
-    # 1. Image Creation
+    # 1. Generate Image via Pollinations
     encoded_prompt = urllib.parse.quote(img_prompt)
     external_image_url = f"https://image.pollinations.ai/prompt/{encoded_prompt}?width=1080&height=1080&nologo=true"
     
-    # 2. Download Image
+    image_url = ""
     try:
-        img_data = requests.get(external_image_url).content
+        img_data = requests.get(external_image_url, timeout=30).content
         
-        # 3. Generate a unique filename
-        filename = f"post_{uuid.uuid4().hex[:8]}.jpg"
-        filepath = os.path.join("images", filename)
-        
-        # 4. Save the image to your local folder.
-        with open(filepath, 'wb') as f:
+        # 2. Save temporarily to disk so we can upload
+        temp_filename = f"temp_post_{uuid.uuid4().hex[:8]}.jpg"
+        temp_filepath = os.path.join("images", temp_filename)
+        with open(temp_filepath, 'wb') as f:
             f.write(img_data)
-            
-        # 5. Return the URL of your FastAPI server
-        base_url = str(req.base_url)
-        local_image_url = f"{base_url}images/{filename}"
         
+        # 3. Upload to Cloudinary and get a permanent public URL
+        upload_result = upload_image(temp_filepath, folder="postify/posts")
+        if upload_result:
+            image_url = upload_result.get("secure_url", "")
+        
+        # 4. Clean up local temp file
+        if os.path.exists(temp_filepath):
+            os.remove(temp_filepath)
+            
     except Exception as e:
-        # If there is an internet issue or an error, return an empty URL.
-        print(f"Image download error: {e}")
-        local_image_url = ""
+        print(f"Image upload error: {e}")
+        image_url = ""
     
-    # Return the response
+    # Return the response with the permanent Cloudinary URL
     return PostResponse(
         caption=response.get("caption", ""),
         hashtags=response.get("hashtags", []),
         call_to_action=response.get("call_to_action", ""),
         image_prompt=img_prompt,
-        image_url=local_image_url # Ab yahan humara apna URL aayega
+        image_url=image_url
     )

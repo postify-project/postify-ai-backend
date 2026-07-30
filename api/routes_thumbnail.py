@@ -4,6 +4,7 @@ from core.llm_setup import get_vision_llm
 from core.prompts import THUMB_PROMPT
 from langchain_core.output_parsers import JsonOutputParser
 from langchain_core.messages import HumanMessage
+from cloud_storage.services import upload_image
 import cv2
 import requests
 import urllib.parse
@@ -104,19 +105,27 @@ def process_thumb_job(job_id: str, video_url: str, base_url: str):
         final_thumb_path = os.path.join("images", final_thumb_filename)
         img.save(final_thumb_path, "JPEG")
         
-        # 6. Delete Temp file
+        # 6. Delete Temp files
         if os.path.exists(video_filename): os.remove(video_filename)
         if os.path.exists(frame_filename): os.remove(frame_filename)
         if os.path.exists(thumb_path): os.remove(thumb_path)
         
-        local_thumb_url = f"{base_url}images/{final_thumb_filename}"
+        # 7. Upload thumbnail to Cloudinary and get permanent URL
+        thumb_url = ""
+        upload_result = upload_image(final_thumb_path, folder="postify/thumbnails")
+        if upload_result:
+            thumb_url = upload_result.get("secure_url", "")
         
-        # update Job status 
+        # 8. Clean up local thumbnail after upload
+        if os.path.exists(final_thumb_path):
+            os.remove(final_thumb_path)
+        
+        # Update Job status
         thumb_jobs[job_id] = {
             "status": "completed",
             "caption": caption,
             "hashtags": hashtags,
-            "thumbnail_url": local_thumb_url,
+            "thumbnail_url": thumb_url,
             "error": None
         }
         

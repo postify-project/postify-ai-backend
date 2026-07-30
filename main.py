@@ -28,6 +28,30 @@ app.include_router(routes_thumbnail.router, prefix="/api/ai/thumbnail", tags=["A
 app.include_router(routes_translate.router, prefix="/api/ai/translate", tags=["AI Video Translator"])
 app.include_router(routes_context.router, prefix="/api/ai/context", tags=["User Context"])
 
+@app.get("/health")
+def health_check():
+    return {"status": "POSTIFY AI Backend is healthy!"}
+
+@app.get("/health/cloudinary", tags=["Health"])
+def check_cloudinary_health():
+    """
+    Pings the Cloudinary API to verify if the credentials are correct and working.
+    """
+    import cloudinary.api
+    try:
+        result = cloudinary.api.ping()
+        return {
+            "status": "success", 
+            "message": "Cloudinary is successfully integrated!", 
+            "cloudinary_response": result
+        }
+    except Exception as e:
+        return {
+            "status": "error", 
+            "message": "Cloudinary integration failed.", 
+            "details": str(e)
+        }
+
 @app.get("/")
 def read_root():
     return {"status": "QRYZON AI Backend is running successfully!"}
