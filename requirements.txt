@@ -11,3 +11,5 @@ groq==0.37.1
 edge-tts==7.2.8
 moviepy==2.2.1
 pillow==11.3.0
+numpy>=1.26.4,<2.0.0
+opencv-python==4.10.0.84
