@@ -43,7 +43,7 @@ langsmith==0.10.10
 moviepy==2.2.1
 multidict==6.7.1
 numpy==2.2.6
-opencv-python==5.0.0.93
+opencv-python-headless>=4.8.0.76
 orjson==3.11.9
 ormsgpack==1.12.2
 packaging==26.2
