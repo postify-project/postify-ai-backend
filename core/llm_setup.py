@@ -15,7 +15,7 @@ def get_llm():
 
 def get_vision_llm():
     return ChatGoogleGenerativeAI(
-        model="gemini-2.5-flash", 
+        model="gemini-3-flash-preview", 
         temperature=0.7,
         google_api_key=os.getenv("GEMINI_API_KEY")
     )
