@@ -54,4 +54,4 @@ def check_cloudinary_health():
 
 @app.get("/")
 def read_root():
-    return {"status": "QRYZON AI Backend is running successfully!"}
+    return {"status": "POSTIFY AI Backend is running successfully!"}

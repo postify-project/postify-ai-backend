@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Request
+from fastapi import APIRouter
 from schemas.post_schema import PostRequest, PostResponse
 from core.llm_setup import get_llm
 from core.prompts import POST_PROMPT
@@ -12,7 +12,7 @@ import os
 router = APIRouter()
 
 @router.post("/", response_model=PostResponse, summary="Generate Social Media Post", description="Generates a complete social media post including caption, hashtags, call-to-action, and a relevant AI-generated image based on the provided topic.")
-async def generate_post(request: PostRequest, req: Request):
+async def generate_post(request: PostRequest):
     llm = get_llm()
     
     # JSON Parser setup

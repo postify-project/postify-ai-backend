@@ -37,13 +37,4 @@ def upload_video(file_path: str, folder: str = "postify/videos") -> Optional[Dic
         logger.error(f"Error uploading video to Cloudinary: {e}")
         return None
 
-def delete_media(public_id: str, resource_type: str = "image") -> bool:
-    """
-    Deletes a media asset from Cloudinary using its public_id.
-    """
-    try:
-        response = cloudinary.uploader.destroy(public_id, resource_type=resource_type)
-        return response.get("result") == "ok"
-    except Exception as e:
-        logger.error(f"Error deleting media from Cloudinary: {e}")
-        return False
+

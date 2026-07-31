@@ -1,11 +1,10 @@
-from fastapi import APIRouter, BackgroundTasks, Request
+from fastapi import APIRouter, BackgroundTasks
 from schemas.thumbnail_schema import ThumbRequest, ThumbJobResponse, ThumbStatusResponse, ThumbResponse
 from core.llm_setup import get_vision_llm
 from core.prompts import THUMB_PROMPT
 from langchain_core.output_parsers import JsonOutputParser
 from langchain_core.messages import HumanMessage
 from cloud_storage.services import upload_image
-import cv2
 import requests
 import urllib.parse
 import uuid
@@ -18,7 +17,7 @@ router = APIRouter()
 thumb_jobs = {}
 
 # Background task function
-def process_thumb_job(job_id: str, video_url: str, base_url: str):
+def process_thumb_job(job_id: str, video_url: str):
     try:
         thumb_jobs[job_id]["status"] = "Downloading Video..."
         
@@ -31,14 +30,11 @@ def process_thumb_job(job_id: str, video_url: str, base_url: str):
         thumb_jobs[job_id]["status"] = "Analyzing Video Frame..."
         
         # 2. Extract the middle frame from the video
-        cap = cv2.VideoCapture(video_filename)
-        total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
-        cap.set(cv2.CAP_PROP_POS_FRAMES, total_frames // 2)
-        ret, frame = cap.read()
-        cap.release()
-        
+        from moviepy import VideoFileClip
+        clip = VideoFileClip(video_filename)
         frame_filename = f"temp_frame_{job_id}.jpg"
-        cv2.imwrite(frame_filename, frame)
+        clip.save_frame(frame_filename, t=clip.duration / 2)
+        clip.close()
         
         
         llm = get_vision_llm()
@@ -140,11 +136,11 @@ def process_thumb_job(job_id: str, video_url: str, base_url: str):
 
 # Endpoint 1: Start Thumbnail generation 
 @router.post("/", response_model=ThumbJobResponse, summary="Start Thumbnail Generation Job", description="Initiates a background job to extract a frame from a video URL and generate an engaging thumbnail with text and an AI-generated background.")
-async def start_thumb_generation(request: ThumbRequest, background_tasks: BackgroundTasks, req: Request):
+async def start_thumb_generation(request: ThumbRequest, background_tasks: BackgroundTasks):
     job_id = uuid.uuid4().hex[:8]
     thumb_jobs[job_id] = {"status": "queued", "caption": "", "hashtags": [], "thumbnail_url": "", "error": None}
     
-    background_tasks.add_task(process_thumb_job, job_id, request.video_url, str(req.base_url))
+    background_tasks.add_task(process_thumb_job, job_id, request.video_url)
     
     return ThumbJobResponse(job_id=job_id, status="queued")
 

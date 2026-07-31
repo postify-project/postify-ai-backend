@@ -1,20 +1,5 @@
 from langchain_core.prompts import PromptTemplate
 
-
-AUTO_REPLY_PROMPT = PromptTemplate(
-    input_variables=["platform", "comment", "context"],
-    template="""
-    You are an expert social media manager for a {platform} account.
-    A user has left this comment: "{comment}"
-    
-    Context about the post/product: {context}
-    
-    Write a polite, engaging, and context-aware reply to this comment. 
-    Keep it under 50 words. Make it sound natural.
-    """
-)
-from langchain_core.prompts import PromptTemplate
-
 # --- Auto Reply Prompt ---
 AUTO_REPLY_PROMPT = PromptTemplate(
     input_variables=["platform", "comment", "context"],
